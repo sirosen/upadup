@@ -63,22 +63,41 @@ def load_precommit_config() -> dict[str, t.Any]:
 
 def update_dependency(current_dependency, known_dependency_names, dependency_versions):
     if "==" not in current_dependency:
-        return current_dependency
-    package_name, version = current_dependency.split("==")
+        package_name: str = current_dependency
+        old_version: str | None = None
+    else:
+        package_name, old_version = current_dependency.split("==")
+
     normed_pkg = normalize_package_name(package_name)
     if normed_pkg not in known_dependency_names:
-        return current_dependency
-    return f"{package_name}=={dependency_versions[normed_pkg]}"
+        return current_dependency, None
+
+    new_version = dependency_versions[normed_pkg]
+    if old_version == new_version:
+        return current_dependency, None
+
+    new_dependency = f"{package_name}=={dependency_versions[normed_pkg]}"
+    return new_dependency, f"{current_dependency} => {new_dependency}"
 
 
 def apply_update(hook_config, additional_dependencies, versions):
-    print("update:")
-    print(hook_config, additional_dependencies, versions)
-    hook_config["additional_dependencies"] = [
+    print(f"pudu is checking additional_dependencies of {hook_config['id']}...", end="")
+    new_deps_with_messages = [
         update_dependency(current, additional_dependencies, versions)
         for current in hook_config["additional_dependencies"]
     ]
-    print("update done!")
+    new_additional_dependencies = [d for d, _ in new_deps_with_messages]
+    update_messages = [
+        message for _, message in new_deps_with_messages if message is not None
+    ]
+    if update_messages:
+        print()
+        for m in update_messages:
+            print("  " + m)
+        print("  ...done")
+        hook_config["additional_dependencies"] = new_additional_dependencies
+    else:
+        print("no updates needed")
 
 
 def main(args: list[str] | None = None):
