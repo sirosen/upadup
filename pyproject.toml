@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pudu"
+description = 'pre-commit additional_dependencies updater'
+readme = "README.md"
+requires-python = ">=3.7"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Stephen Rosen", email = "sirosen0@gmail.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+    "ruamel.yaml<0.18"
+]
+dynamic = ["version"]
+
+[project.urls]
+Documentation = "https://github.com/sirosen/pudu#readme"
+Issues = "https://github.com/sirosen/pudu/issues"
+Source = "https://github.com/sirosen/pudu"
+
+[project.scripts]
+pudu = "pudu.main:main"
+
+[tool.hatch.version]
+path = "src/pudu/__init__.py"
+
+[tool.hatch.envs.test]
+dependencies = [
+  "pytest",
+  "coverage",
+]
+[tool.hatch.envs.test.scripts]
+run = "coverage run pytest {args}"
+
+[[tool.hatch.envs.test.matrix]]
+python = ["37", "38", "39", "310", "311"]
+
+[tool.hatch.envs.selfcheck.scripts]
+test = "coverage run pytest {args}"
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
