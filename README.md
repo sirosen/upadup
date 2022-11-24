@@ -18,7 +18,8 @@ It provides a supplemental tool which knows how to handle specific common cases.
 Drop a `.pudu.yaml` file into your repo to configure which hooks to update.
 
 `pudu` takes no arguments and automatically reads `.pudu.yaml` from the current
-directory.
+directory if available.
+Otherwise, it uses its default configuration.
 
 ### Config Format
 
@@ -33,7 +34,7 @@ For example:
 ```yaml
 # .pudu.yaml
 repos:
-  - repo: https://github.com/pycqa/flake
+  - repo: https://github.com/pycqa/flake8
     hooks:
       - id: flake8
         additional_dependencies:
@@ -57,6 +58,31 @@ Note that matching is case insensitive for repo names and
 `additional_dependencies`, and that we normalize `-` and `_` to match, as
 pypi.org does. But the overall structure of the config is intended to be a
 mirror image.
+
+### Default Config
+
+The following config is the `pudu` default. Note that missing dependencies are
+ignored.
+
+```yaml
+repos:
+  - repo: https://github.com/pycqa/flake8
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-bandit
+          - flake8-bugbear
+          - flake8-comprehensions
+          - flake8-pyi
+          - flake8-typing-imports
+          - flake8-docstrings
+          - flake8-builtins
+  - repo: https://github.com/asottile/blacken-docs
+    hooks:
+      - id: blacken-docs
+        additional_dependencies:
+          - black
+```
 
 ## Why is it named "pudu"?
 

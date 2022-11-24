@@ -7,9 +7,29 @@ import sys
 import typing as t
 import urllib.request
 
-import ruamel.yaml
+from . import yaml
 
-yaml = ruamel.yaml.YAML(typ="rt")
+DEFAULT_CONFIG = yaml.load(
+    """\
+repos:
+  - repo: https://github.com/pycqa/flake
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-bandit
+          - flake8-bugbear
+          - flake8-comprehensions
+          - flake8-pyi
+          - flake8-typing-imports
+          - flake8-docstrings
+          - flake8-builtins
+  - repo: https://github.com/asottile/blacken-docs
+    hooks:
+      - id: blacken-docs
+        additional_dependencies:
+          - black
+"""
+)
 
 
 def normalize_package_name(name: str):
@@ -25,7 +45,7 @@ def get_pkg_latest(name: str) -> str:
 def read_pudu_config() -> dict[str, t.Any]:
     path = pathlib.Path.cwd() / ".pudu.yaml"
     if not path.is_file():
-        raise ValueError("pudu cannot run without .pudu.yaml")
+        return DEFAULT_CONFIG
 
     with path.open() as fp:
         return yaml.load(fp)
@@ -63,41 +83,60 @@ def load_precommit_config() -> dict[str, t.Any]:
 
 def update_dependency(current_dependency, known_dependency_names, dependency_versions):
     if "==" not in current_dependency:
-        package_name: str = current_dependency
-        old_version: str | None = None
-    else:
-        package_name, old_version = current_dependency.split("==")
+        return None
+
+    package_name, _, old_version = current_dependency.partition("==")
 
     normed_pkg = normalize_package_name(package_name)
     if normed_pkg not in known_dependency_names:
-        return current_dependency, None
+        return None
 
     new_version = dependency_versions[normed_pkg]
     if old_version == new_version:
-        return current_dependency, None
+        return None
 
-    new_dependency = f"{package_name}=={dependency_versions[normed_pkg]}"
-    return new_dependency, f"{current_dependency} => {new_dependency}"
+    return f"{package_name}=={dependency_versions[normed_pkg]}"
 
 
-def apply_update(hook_config, additional_dependencies, versions):
+def build_updated_dependency_map(
+    hook_config, known_dependency_names, dependency_versions
+):
+    new_deps = {}
+    for current in hook_config["additional_dependencies"]:
+        new_dependency = update_dependency(
+            current, known_dependency_names, dependency_versions
+        )
+        if new_dependency is None:
+            continue
+        new_deps[current] = new_dependency
+    return new_deps
+
+
+def generate_updates(hook_config, additional_dependencies, dependency_versions):
     print(f"pudu is checking additional_dependencies of {hook_config['id']}...", end="")
-    new_deps_with_messages = [
-        update_dependency(current, additional_dependencies, versions)
-        for current in hook_config["additional_dependencies"]
-    ]
-    new_additional_dependencies = [d for d, _ in new_deps_with_messages]
-    update_messages = [
-        message for _, message in new_deps_with_messages if message is not None
-    ]
-    if update_messages:
+    new_deps = build_updated_dependency_map(
+        hook_config, additional_dependencies, dependency_versions
+    )
+    if new_deps:
         print()
-        for m in update_messages:
-            print("  " + m)
-        print("  ...done")
-        hook_config["additional_dependencies"] = new_additional_dependencies
+        for current_dependency, new_dependency in new_deps.items():
+            print(f"  {current_dependency} => {new_dependency}")
+            yield (current_dependency, new_dependency)
     else:
         print("no updates needed")
+
+
+def apply_updates(config_path: pathlib.Path, updates):
+    with config_path.open("r") as fp:
+        file_content = fp.readlines()
+    for old_dep, new_dep in updates:
+        lineno, column = old_dep.lc.line, old_dep.lc.col + 1
+        old_line = file_content[lineno]
+        file_content[lineno] = "".join(
+            (old_line[:column], new_dep, old_line[column + len(old_dep) :])
+        )
+    with config_path.open("w") as fp:
+        fp.write("".join(file_content))
 
 
 def main(args: list[str] | None = None):
@@ -109,6 +148,7 @@ def main(args: list[str] | None = None):
     pudu_config = load_pudu_config()
     precommit_config = load_precommit_config()
 
+    all_updates = []
     for repo_config in precommit_config["repos"]:
         repo_str = repo_config.get("repo").casefold()
         if repo_str in pudu_config["repos"]:
@@ -116,11 +156,17 @@ def main(args: list[str] | None = None):
             for hook_config in repo_config["hooks"]:
                 hook_id = hook_config["id"]
                 if hook_id in pudu_repo_config:
-                    apply_update(
-                        hook_config,
-                        pudu_repo_config.get(hook_id, []),
-                        pudu_config["versions"],
+                    all_updates.extend(
+                        generate_updates(
+                            hook_config,
+                            pudu_repo_config.get(hook_id, []),
+                            pudu_config["versions"],
+                        )
                     )
 
-    with (pathlib.Path.cwd() / ".pre-commit-config.yaml").open("w") as fp:
-        yaml.dump(precommit_config, fp)
+    if all_updates:
+        print("apply updates...", end="")
+        apply_updates(pathlib.Path.cwd() / ".pre-commit-config.yaml", all_updates)
+        print("done")
+    else:
+        print("no updates needed in any hook configs")
