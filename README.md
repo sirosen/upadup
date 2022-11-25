@@ -1,4 +1,4 @@
-# updadup!
+# upadup!
 
 `upadup` -- Utility for Python `additional_dependencies` Updates in Pre-Commit
 
@@ -12,7 +12,7 @@ However, what's not great is that `pre-commit autoupdate` cannot update your
 
 ## Usage
 
-`updadup` will only update `additional_dependencies` items which are pinned to
+`upadup` will only update `additional_dependencies` items which are pinned to
 specific versions, and only for known python hooks and their dependencies.
 
 Simply `cd myrepo; upadup`!
