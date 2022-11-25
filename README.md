@@ -90,6 +90,23 @@ repos:
           - black
 ```
 
+### extends_default
+
+Unless otherwise specified, the default config will be merged with your
+`.upadup.yaml` configuration, effectively a union.
+
+You can disable this behavior by setting `extends_default: false`, as in
+
+```yaml
+extends_default: false
+repos:
+  - repo: https://github.com/pycqa/flake8
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-bugbear
+```
+
 ## The Meaning of "upadup"
 
 Update python additional depenedencies uh... pre-commit!

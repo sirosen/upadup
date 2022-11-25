@@ -3,75 +3,12 @@ from __future__ import annotations
 import argparse
 import collections
 import difflib
-import json
 import pathlib
 import sys
 import typing as t
-import urllib.request
 
-from . import yaml
-
-DEFAULT_CONFIG = yaml.load(
-    """\
-repos:
-  - repo: https://github.com/pycqa/flake8
-    hooks:
-      - id: flake8
-        additional_dependencies:
-          - flake8-bandit
-          - flake8-bugbear
-          - flake8-comprehensions
-          - flake8-pyi
-          - flake8-typing-imports
-          - flake8-docstrings
-          - flake8-builtins
-  - repo: https://github.com/asottile/blacken-docs
-    hooks:
-      - id: blacken-docs
-        additional_dependencies:
-          - black
-"""
-)
-
-
-def normalize_package_name(name: str):
-    return name.lower().replace("_", "-")
-
-
-def get_pkg_latest(name: str) -> str:
-    with urllib.request.urlopen(f"https://pypi.python.org/pypi/{name}/json") as conn:
-        version_data = json.load(conn)
-    return str(version_data["info"]["version"])
-
-
-def read_upadup_config() -> dict[str, t.Any]:
-    path = pathlib.Path.cwd() / ".upadup.yaml"
-    if not path.is_file():
-        return DEFAULT_CONFIG
-
-    with path.open() as fp:
-        return yaml.load(fp)
-
-
-def load_upadup_config() -> dict:
-    upadup_config = read_upadup_config()
-
-    versions = {}
-    upadup_config_map = {}
-    for repo_config in upadup_config["repos"]:
-        repo_str = repo_config["repo"].casefold()
-        upadup_config_map[repo_str] = {}
-        for hook_config in repo_config["hooks"]:
-            hook_id = hook_config["id"]
-            additional_dependencies = hook_config["additional_dependencies"]
-
-            for dep in [normalize_package_name(n) for n in additional_dependencies]:
-                if dep not in versions:
-                    versions[dep] = get_pkg_latest(dep)
-
-            upadup_config_map[repo_str][hook_id] = additional_dependencies
-
-    return {"repos": upadup_config_map, "versions": versions}
+from . import config, yaml
+from .package_utils import normalize_package_name
 
 
 def load_precommit_config() -> dict[str, t.Any]:
@@ -181,7 +118,7 @@ def main(argv: list[str] | None = None):
     )
     args = parser.parse_args(argv or sys.argv[1:])
 
-    upadup_config = load_upadup_config()
+    upadup_config = config.load_upadup_config()
     precommit_config = load_precommit_config()
 
     all_updates = []
