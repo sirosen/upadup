@@ -78,11 +78,12 @@ repos:
         additional_dependencies:
           - flake8-bandit
           - flake8-bugbear
-          - flake8-comprehensions
-          - flake8-pyi
-          - flake8-typing-imports
-          - flake8-docstrings
           - flake8-builtins
+          - flake8-comprehensions
+          - flake8-docstrings
+          - flake8-pyi
+          - flake8-typing-as-t
+          - flake8-typing-imports
   - repo: https://github.com/asottile/blacken-docs
     hooks:
       - id: blacken-docs

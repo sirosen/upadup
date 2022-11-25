@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+- Add `flake8-typing-as-t` to default config
+
 ## 0.0.3
 
 - Configuration now defaults to a merge between defaults and user config. This
