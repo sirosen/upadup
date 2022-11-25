@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import collections
+import difflib
 import json
 import pathlib
 import sys
@@ -12,7 +14,7 @@ from . import yaml
 DEFAULT_CONFIG = yaml.load(
     """\
 repos:
-  - repo: https://github.com/pycqa/flake
+  - repo: https://github.com/pycqa/flake8
     hooks:
       - id: flake8
         additional_dependencies:
@@ -112,6 +114,11 @@ def build_updated_dependency_map(
     return new_deps
 
 
+def _sort_updates_key(update):
+    current_dependency, new_dependency = update
+    return (current_dependency.lc.line, current_dependency.lc.col)
+
+
 def generate_updates(hook_config, additional_dependencies, dependency_versions):
     print(
         f"upadup is checking additional_dependencies of {hook_config['id']}...", end=""
@@ -128,24 +135,51 @@ def generate_updates(hook_config, additional_dependencies, dependency_versions):
         print("no updates needed")
 
 
-def apply_updates(config_path: pathlib.Path, updates):
+def create_new_content(config_path: pathlib.Path, updates):
     with config_path.open("r") as fp:
         file_content = fp.readlines()
+
+    # NB: int() == 0
+    line_offsets = collections.defaultdict(int)
     for old_dep, new_dep in updates:
         lineno, column = old_dep.lc.line, old_dep.lc.col + 1
+
+        begin = column + line_offsets[lineno]
+        end = begin + len(old_dep)
+        line_offsets[lineno] += len(new_dep) - len(old_dep)
+
         old_line = file_content[lineno]
-        file_content[lineno] = "".join(
-            (old_line[:column], new_dep, old_line[column + len(old_dep) :])
-        )
+        file_content[lineno] = "".join((old_line[:begin], new_dep, old_line[end:]))
+
+    return file_content
+
+
+def generate_diff(config_path: pathlib.Path, updates):
+    new_content = create_new_content(config_path, updates)
+    with config_path.open("r") as fp:
+        old_content = fp.readlines()
+    return difflib.unified_diff(
+        old_content, new_content, ".pre-commit-config.yaml", ".pre-commit-config.yaml"
+    )
+
+
+def apply_updates(config_path: pathlib.Path, updates):
+    file_content = create_new_content(config_path, updates)
     with config_path.open("w") as fp:
         fp.write("".join(file_content))
 
 
-def main(args: list[str] | None = None):
+def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(
         description="upadup -- the pre-commit additional_dependencies updater"
     )
-    parser.parse_args(args or sys.argv[1:])
+    parser.add_argument(
+        "--check",
+        help="check and show diff, but do not update",
+        action="store_true",
+        default=False,
+    )
+    args = parser.parse_args(argv or sys.argv[1:])
 
     upadup_config = load_upadup_config()
     precommit_config = load_precommit_config()
@@ -166,9 +200,21 @@ def main(args: list[str] | None = None):
                         )
                     )
 
+    all_updates = sorted(all_updates, key=_sort_updates_key)
+
     if all_updates:
-        print("apply updates...", end="")
-        apply_updates(pathlib.Path.cwd() / ".pre-commit-config.yaml", all_updates)
-        print("done")
+        if args.check:
+            print(
+                "".join(
+                    generate_diff(
+                        pathlib.Path.cwd() / ".pre-commit-config.yaml", all_updates
+                    )
+                )
+            )
+            sys.exit(1)
+        else:
+            print("apply updates...", end="")
+            apply_updates(pathlib.Path.cwd() / ".pre-commit-config.yaml", all_updates)
+            print("done")
     else:
         print("no updates needed in any hook configs")
