@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.0.6
+
 - Fix handling of literal string nodes during yaml loading
 
 ## 0.0.5
