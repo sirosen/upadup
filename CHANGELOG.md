@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.0.5
+
 - Fix handling of empty or missing `.upadup.yaml` config
 
 ## 0.0.4
