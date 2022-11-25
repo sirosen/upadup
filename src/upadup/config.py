@@ -80,7 +80,7 @@ def _validate_config(conf_dict: dict[str, t.Any]) -> None:
 def _populate_map(
     conf_map: dict[str, t.Any], full_config: dict[str, t.Any], versions: dict[str, str]
 ) -> None:
-    for repo_config in full_config["repos"]:
+    for repo_config in full_config.get("repos", []):
         repo_str = repo_config["repo"].casefold()
         if repo_str not in conf_map:
             conf_map[repo_str] = {}

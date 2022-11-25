@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix handling of empty or missing `.upadup.yaml` config
+
 ## 0.0.4
 
 - Add `flake8-typing-as-t` to default config
