@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix handling of literal string nodes during yaml loading
+
 ## 0.0.5
 
 - Fix handling of empty or missing `.upadup.yaml` config
