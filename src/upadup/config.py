@@ -24,6 +24,8 @@ repos:
           - flake8-builtins
           - flake8-comprehensions
           - flake8-docstrings
+          - flake8-implicit-str-concat
+          - flake8-logging-format
           - flake8-pyi
           - flake8-typing-as-t
           - flake8-typing-imports

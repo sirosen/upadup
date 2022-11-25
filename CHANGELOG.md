@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add `flake8-logging-format` and `flake8-implicit-str-concat` to default
+  config
+
 ## 0.0.7
 
 - Fix handling of unquoted string literals in "bare strings" style
