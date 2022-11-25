@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.0.7
+
 - Fix handling of unquoted string literals in "bare strings" style
 
 ## 0.0.6
