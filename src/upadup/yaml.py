@@ -40,24 +40,28 @@ class ConstructorWithStrLocs(ruamel.yaml.constructor.RoundTripConstructor):
                 node.start_mark,
             )
 
+        offset_col = 0
         if node.style == "|" and isinstance(node.value, str):
             ret_val = PreservedScalarStringWithLoc(node.value)
         elif bool(self._preserve_quotes) and isinstance(node.value, str):
             if node.style == "'":
                 ret_val = SingleQuotedScalarStringWithLoc(node.value)
+                offset_col = 1
             elif node.style == '"':
                 ret_val = DoubleQuotedScalarStringWithLoc(node.value)
+                offset_col = 1
             else:
                 ret_val = StrWithLoc(node.value)
         else:
             ret_val = StrWithLoc(node.value)
         ret_val.lc = ruamel.yaml.comments.LineCol()
         ret_val.lc.line = node.start_mark.line
-        ret_val.lc.col = node.start_mark.column
+        ret_val.lc.col = node.start_mark.column + offset_col
         return ret_val
 
 
 _yaml_impl = ruamel.yaml.YAML(typ="rt")
+_yaml_impl.preserve_quotes = True
 _yaml_impl.Constructor = ConstructorWithStrLocs
 
 

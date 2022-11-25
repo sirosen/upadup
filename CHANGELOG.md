@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix handling of unquoted string literals in "bare strings" style
+
 ## 0.0.6
 
 - Fix handling of literal string nodes during yaml loading
