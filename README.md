@@ -1,6 +1,6 @@
-# pudu
+# updadup!
 
-`pudu` -- update pre-commit `additional_dependencies`
+`upadup` -- Utility for Python `additional_dependencies` Updates in Pre-Commit
 
 ## Why?
 
@@ -8,22 +8,28 @@
 However, what's not great is that `pre-commit autoupdate` cannot update your
 `additional_dependencies` lists.
 
-This is a well-reasoned limitation of `pre-commit autoupdate`, and
-`pudu` does not aim to change this.
-
-It provides a supplemental tool which knows how to handle specific common cases.
+`upadup` is a supplemental tool which knows how to handle specific common cases.
 
 ## Usage
 
-Drop a `.pudu.yaml` file into your repo to configure which hooks to update.
+`updadup` will only update `additional_dependencies` items which are pinned to
+specific versions, and only for known python hooks and their dependencies.
 
-`pudu` takes no arguments and automatically reads `.pudu.yaml` from the current
+Simply `cd myrepo; upadup`!
+
+`upadup` can also be configured with information about hooks which are unknown
+to it. More on this below.
+
+### Config Loading and Format
+
+If you have hooks outside of the defaults which you want `upadup` to examine,
+drop a `.upadup.yaml` file into your repo to configure which hooks to update.
+
+`upadup` takes no arguments and automatically reads `.upadup.yaml` from the current
 directory if available.
 Otherwise, it uses its default configuration.
 
-### Config Format
-
-`pudu` needs to know what hook repos you want it to examine, and within those
+`upadup` needs to know what hook repos you want it to examine, and within those
 which dependencies you want it to keep updated.
 The config format intentionally mirrors your pre-commit config. Specify a list
 of repos, and in each repo, specify a list of hooks to update. Hooks are a
@@ -32,7 +38,7 @@ combination of `id` (the hook ID) and `additional_dependencies`.
 For example:
 
 ```yaml
-# .pudu.yaml
+# .upadup.yaml
 repos:
   - repo: https://github.com/pycqa/flake8
     hooks:
@@ -61,7 +67,7 @@ mirror image.
 
 ### Default Config
 
-The following config is the `pudu` default. Note that missing dependencies are
+The following config is the `upadup` default. Note that missing dependencies are
 ignored.
 
 ```yaml
@@ -84,16 +90,10 @@ repos:
           - black
 ```
 
-## Why is it named "pudu"?
+## The Meaning of "upadup"
 
-**Choose the reason which you like best.**
+Update python additional depenedencies uh... pre-commit!
 
-PUDU could be the Pre-commit UpdatUr.
+Unacceptable puns accosting durable urban pachyderms
 
-A pudu is a small, cute, crepuscular deer.
-
-PUDU might stand for Python Updating Data Utility.
-
-"pudu" is a homophone for poodoo (as in bantha poodoo).
-
-PUDU could be Puns Under DUress.
+Unbelievably playful, awesome, deterministic update program

@@ -42,8 +42,8 @@ def get_pkg_latest(name: str) -> str:
     return str(version_data["info"]["version"])
 
 
-def read_pudu_config() -> dict[str, t.Any]:
-    path = pathlib.Path.cwd() / ".pudu.yaml"
+def read_upadup_config() -> dict[str, t.Any]:
+    path = pathlib.Path.cwd() / ".upadup.yaml"
     if not path.is_file():
         return DEFAULT_CONFIG
 
@@ -51,14 +51,14 @@ def read_pudu_config() -> dict[str, t.Any]:
         return yaml.load(fp)
 
 
-def load_pudu_config() -> dict:
-    pudu_config = read_pudu_config()
+def load_upadup_config() -> dict:
+    upadup_config = read_upadup_config()
 
     versions = {}
-    pudu_config_map = {}
-    for repo_config in pudu_config["repos"]:
+    upadup_config_map = {}
+    for repo_config in upadup_config["repos"]:
         repo_str = repo_config["repo"].casefold()
-        pudu_config_map[repo_str] = {}
+        upadup_config_map[repo_str] = {}
         for hook_config in repo_config["hooks"]:
             hook_id = hook_config["id"]
             additional_dependencies = hook_config["additional_dependencies"]
@@ -67,15 +67,15 @@ def load_pudu_config() -> dict:
                 if dep not in versions:
                     versions[dep] = get_pkg_latest(dep)
 
-            pudu_config_map[repo_str][hook_id] = additional_dependencies
+            upadup_config_map[repo_str][hook_id] = additional_dependencies
 
-    return {"repos": pudu_config_map, "versions": versions}
+    return {"repos": upadup_config_map, "versions": versions}
 
 
 def load_precommit_config() -> dict[str, t.Any]:
     path = pathlib.Path.cwd() / ".pre-commit-config.yaml"
     if not path.is_file():
-        raise ValueError("pudu cannot run without .pre-commit-config.yaml")
+        raise ValueError("upadup cannot run without .pre-commit-config.yaml")
 
     with path.open() as fp:
         return yaml.load(fp)
@@ -113,7 +113,9 @@ def build_updated_dependency_map(
 
 
 def generate_updates(hook_config, additional_dependencies, dependency_versions):
-    print(f"pudu is checking additional_dependencies of {hook_config['id']}...", end="")
+    print(
+        f"upadup is checking additional_dependencies of {hook_config['id']}...", end=""
+    )
     new_deps = build_updated_dependency_map(
         hook_config, additional_dependencies, dependency_versions
     )
@@ -141,26 +143,26 @@ def apply_updates(config_path: pathlib.Path, updates):
 
 def main(args: list[str] | None = None):
     parser = argparse.ArgumentParser(
-        description="pudu -- the pre-commit additional_dependencies updater"
+        description="upadup -- the pre-commit additional_dependencies updater"
     )
     parser.parse_args(args or sys.argv[1:])
 
-    pudu_config = load_pudu_config()
+    upadup_config = load_upadup_config()
     precommit_config = load_precommit_config()
 
     all_updates = []
     for repo_config in precommit_config["repos"]:
         repo_str = repo_config.get("repo").casefold()
-        if repo_str in pudu_config["repos"]:
-            pudu_repo_config = pudu_config["repos"][repo_str]
+        if repo_str in upadup_config["repos"]:
+            upadup_repo_config = upadup_config["repos"][repo_str]
             for hook_config in repo_config["hooks"]:
                 hook_id = hook_config["id"]
-                if hook_id in pudu_repo_config:
+                if hook_id in upadup_repo_config:
                     all_updates.extend(
                         generate_updates(
                             hook_config,
-                            pudu_repo_config.get(hook_id, []),
-                            pudu_config["versions"],
+                            upadup_repo_config.get(hook_id, []),
+                            upadup_config["versions"],
                         )
                     )
 

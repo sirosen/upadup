@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pudu"
-description = 'pre-commit additional_dependencies updater'
+name = "upadup"
+description = 'utility for python additional_dependencies updates in pre-commit'
 readme = "README.md"
 requires-python = ">=3.7"
 license = "MIT"
@@ -29,15 +29,15 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Documentation = "https://github.com/sirosen/pudu#readme"
-Issues = "https://github.com/sirosen/pudu/issues"
-Source = "https://github.com/sirosen/pudu"
+Documentation = "https://github.com/sirosen/upadup#readme"
+Issues = "https://github.com/sirosen/upadup/issues"
+Source = "https://github.com/sirosen/upadup"
 
 [project.scripts]
-pudu = "pudu.main:main"
+upadup = "upadup.main:main"
 
 [tool.hatch.version]
-path = "src/pudu/__init__.py"
+path = "src/upadup/__init__.py"
 
 [tool.hatch.envs.test]
 dependencies = [
