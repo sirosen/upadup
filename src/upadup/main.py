@@ -77,7 +77,7 @@ def create_new_content(config_path: pathlib.Path, updates):
         file_content = fp.readlines()
 
     # NB: int() == 0
-    line_offsets = collections.defaultdict(int)
+    line_offsets: dict[int, int] = collections.defaultdict(int)
     for old_dep, new_dep in updates:
         lineno, column = old_dep.lc.line, old_dep.lc.col + 1
 

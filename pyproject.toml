@@ -50,8 +50,13 @@ run = "coverage run pytest {args}"
 [[tool.hatch.envs.test.matrix]]
 python = ["37", "38", "39", "310", "311"]
 
-[tool.hatch.envs.selfcheck.scripts]
-test = "coverage run pytest {args}"
+[tool.hatch.envs.mypy]
+description = "Lint with mypy"
+skip-install = true
+dependencies = ["mypy"]
+
+[tool.hatch.envs.mypy.scripts]
+src = "mypy --show-error-codes src/"
 
 [tool.coverage.run]
 branch = true
