@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import collections
 import difflib
+import os
 import pathlib
 import sys
 import typing as t
@@ -11,13 +12,13 @@ from . import config, yaml
 from .package_utils import normalize_package_name
 
 
-def load_precommit_config() -> dict[str, t.Any]:
+def load_precommit_config() -> tuple[dict[str, t.Any], None | str | tuple[str, ...]]:
     path = pathlib.Path.cwd() / ".pre-commit-config.yaml"
     if not path.is_file():
         raise ValueError("upadup cannot run without .pre-commit-config.yaml")
 
     with path.open() as fp:
-        return yaml.load(fp)
+        return yaml.load(fp), fp.newlines
 
 
 def update_dependency(current_dependency, known_dependency_names, dependency_versions):
@@ -100,9 +101,20 @@ def generate_diff(config_path: pathlib.Path, updates):
     )
 
 
-def apply_updates(config_path: pathlib.Path, updates):
+def apply_updates(
+    config_path: pathlib.Path, updates, newline: None | str | tuple[str, ...]
+):
     file_content = create_new_content(config_path, updates)
-    with config_path.open("w") as fp:
+
+    # If no newlines were encountered, use the OS default.
+    if newline is None:
+        newline = os.linesep
+    # If multiple newline variants were encountered, pick one.
+    # Note that the order of newlines in the tuple is meaningless.
+    if isinstance(newline, tuple):
+        newline = newline[0]
+
+    with config_path.open("w", newline=newline) as fp:
         fp.write("".join(file_content))
 
 
@@ -119,7 +131,7 @@ def main(argv: list[str] | None = None):
     args = parser.parse_args(argv or sys.argv[1:])
 
     upadup_config = config.load_upadup_config()
-    precommit_config = load_precommit_config()
+    precommit_config, existing_newlines = load_precommit_config()
 
     all_updates = []
     for repo_config in precommit_config["repos"]:
@@ -151,7 +163,11 @@ def main(argv: list[str] | None = None):
             sys.exit(1)
         else:
             print("apply updates...", end="")
-            apply_updates(pathlib.Path.cwd() / ".pre-commit-config.yaml", all_updates)
+            apply_updates(
+                pathlib.Path.cwd() / ".pre-commit-config.yaml",
+                all_updates,
+                existing_newlines,
+            )
             print("done")
     else:
         print("no updates needed in any hook configs")
