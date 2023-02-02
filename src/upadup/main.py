@@ -42,7 +42,7 @@ def build_updated_dependency_map(
     hook_config, known_dependency_names, dependency_versions
 ):
     new_deps = {}
-    for current in hook_config["additional_dependencies"]:
+    for current in hook_config.get("additional_dependencies", ()):
         new_dependency = update_dependency(
             current, known_dependency_names, dependency_versions
         )
