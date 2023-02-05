@@ -136,6 +136,9 @@ def main(argv: list[str] | None = None):
     all_updates = []
     for repo_config in precommit_config["repos"]:
         repo_str = repo_config.get("repo").casefold()
+        # Strip the ".git" suffix from the repo URL, if present.
+        if repo_str.endswith(".git"):
+            repo_str = repo_str[:-4]
         if repo_str in upadup_config["repos"]:
             upadup_repo_config = upadup_config["repos"][repo_str]
             for hook_config in repo_config["hooks"]:
