@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.0.8
+
 - Add `flake8-logging-format` and `flake8-implicit-str-concat` to default
   config
 - Fix a crash bug when known hooks were present without the anticipated
