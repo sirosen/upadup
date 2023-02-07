@@ -4,6 +4,10 @@
 
 - Add `flake8-logging-format` and `flake8-implicit-str-concat` to default
   config
+- Fix a crash bug when known hooks were present without the anticipated
+  `additional_dependencies`
+- Normalize repository names to remove trailing `.git` where appropriate, to
+  enable matching in more cases
 
 ## 0.0.7
 
