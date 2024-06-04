@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Timeout after 30 seconds when retrieving JSON from PyPI.
+
 ## 0.0.8
 
 - Add `flake8-logging-format` and `flake8-implicit-str-concat` to default
