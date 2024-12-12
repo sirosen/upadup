@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Timeout after 30 seconds when retrieving JSON from PyPI.
+- Support updating dependencies associated with the canonical blacken-docs repo.
 
 ## 0.0.8
 

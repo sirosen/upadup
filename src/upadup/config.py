@@ -29,6 +29,16 @@ repos:
           - flake8-pyi
           - flake8-typing-as-t
           - flake8-typing-imports
+
+  - repo: https://github.com/adamchainz/blacken-docs
+    hooks:
+      - id: blacken-docs
+        additional_dependencies:
+          - black
+
+  # Old hook URLs
+  # -------------
+
   - repo: https://github.com/asottile/blacken-docs
     hooks:
       - id: blacken-docs
