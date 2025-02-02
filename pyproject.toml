@@ -1,13 +1,20 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["flit-core"]
+build-backend = "flit_core.buildapi"
+
+[dependency-groups]
+coverage = ["coverage[toml]"]
+lint = ["pre-commit"]
+typing = ["mypy"]
+test = ["pytest", { include-group = "coverage" }]
 
 [project]
 name = "upadup"
+version = "0.1.0"
 description = 'utility for python additional_dependencies updates in pre-commit'
 readme = "README.md"
-requires-python = ">=3.7"
-license = "MIT"
+requires-python = ">=3.9"
+license = { text = "MIT" }
 keywords = []
 authors = [
   { name = "Stephen Rosen", email = "sirosen0@gmail.com" },
@@ -24,45 +31,44 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-    "ruamel.yaml<0.18"
+    "ruamel.yaml>=0.18.10,<0.19"
 ]
-dynamic = ["version"]
 
 [project.urls]
-Documentation = "https://github.com/sirosen/upadup#readme"
-Issues = "https://github.com/sirosen/upadup/issues"
-Source = "https://github.com/sirosen/upadup"
+documentation = "https://github.com/sirosen/upadup#readme"
+issues = "https://github.com/sirosen/upadup/issues"
+source = "https://github.com/sirosen/upadup"
 
 [project.scripts]
 upadup = "upadup.main:main"
 
-[tool.hatch.version]
-path = "src/upadup/__init__.py"
 
-[tool.hatch.envs.test]
-dependencies = [
-  "pytest",
-  "coverage",
-]
-[tool.hatch.envs.test.scripts]
-run = "coverage run pytest {args}"
+[tool.mypy]
+sqlite_cache = true
+ignore_missing_imports = true
+disallow_subclassing_any = false
+files = ["src"]
 
-[[tool.hatch.envs.test.matrix]]
-python = ["39", "310", "311", "312", "313"]
-
-[tool.hatch.envs.mypy]
-description = "Lint with mypy"
-skip-install = true
-dependencies = ["mypy"]
-
-[tool.hatch.envs.mypy.scripts]
-src = "mypy --show-error-codes src/"
 
 [tool.coverage.run]
+parallel = true
 branch = true
+source = ["upadup"]
+
+[tool.coverage.paths]
+source = [
+    "src/",
+    "*/site-packages/",
+]
 
 [tool.coverage.report]
+show_missing = true
+skip_covered = true
+# fail_under = 50
 exclude_lines = [
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if t.TYPE_CHECKING:",
+    "@t.overload",
 ]

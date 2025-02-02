@@ -2,7 +2,7 @@ import json
 import urllib.request
 
 
-def normalize_package_name(name: str):
+def normalize_package_name(name: str) -> str:
     return name.lower().replace("_", "-")
 
 
