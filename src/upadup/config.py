@@ -62,23 +62,27 @@ repos:
 def _validate_config(conf_dict: dict[str, t.Any]) -> None:
     if "repos" in conf_dict:
         if not isinstance(conf_dict["repos"], list):
-            raise BadConfigError("'$.repos' should be list")
+            raise BadConfigError("'$.repos' should be a list")
         for i_repo, repo_config in enumerate(conf_dict["repos"]):
             if not isinstance(repo_config, dict):
-                raise BadConfigError(f"'$.repos[{i_repo}]' should be map")
+                raise BadConfigError(f"'$.repos[{i_repo}]' should be a map")
             if not isinstance(repo_config.get("repo"), str):
-                raise BadConfigError(f"'$.repos[{i_repo}].repo' should be string")
+                raise BadConfigError(f"'$.repos[{i_repo}].repo' should be a string")
             if not isinstance(repo_config.get("hooks"), list):
-                raise BadConfigError(f"'$.repos[{i_repo}].hooks' should be list")
+                raise BadConfigError(f"'$.repos[{i_repo}].hooks' should be a list")
             for i_hook, hook_config in enumerate(repo_config["hooks"]):
-                if not isinstance(hook_config["id"], str):
+                if not isinstance(hook_config, dict):
                     raise BadConfigError(
-                        f"'$.repos[{i_repo}].hooks[{i_hook}].id' should be string"
+                        f"'$.repos[{i_repo}].hooks[{i_hook}]' should be a map"
+                    )
+                if not isinstance(hook_config.get("id"), str):
+                    raise BadConfigError(
+                        f"'$.repos[{i_repo}].hooks[{i_hook}].id' should be a string"
                     )
 
     if "extends_default" in conf_dict:
         if not isinstance(conf_dict["extends_default"], bool):
-            raise ValueError("malformed config, '$.extends_default' should be boolean")
+            raise BadConfigError("'$.extends_default' should be a boolean")
 
 
 def _read_local_config() -> dict[str, t.Any] | None:
