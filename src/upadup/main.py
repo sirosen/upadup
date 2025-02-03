@@ -9,7 +9,7 @@ import sys
 import typing as t
 
 from . import config, yaml
-from .package_utils import normalize_package_name
+from .package_utils import VersionMap, normalize_package_name
 
 
 def load_precommit_config() -> tuple[dict[str, t.Any], None | str | tuple[str, ...]]:
@@ -21,7 +21,9 @@ def load_precommit_config() -> tuple[dict[str, t.Any], None | str | tuple[str, .
         return yaml.load(fp), fp.newlines
 
 
-def update_dependency(current_dependency, known_dependency_names, dependency_versions):
+def update_dependency(
+    current_dependency, known_dependency_names, dependency_versions: VersionMap
+):
     if "==" not in current_dependency:
         return None
 
@@ -39,7 +41,7 @@ def update_dependency(current_dependency, known_dependency_names, dependency_ver
 
 
 def build_updated_dependency_map(
-    hook_config, known_dependency_names, dependency_versions
+    hook_config, known_dependency_names, dependency_versions: VersionMap
 ):
     new_deps = {}
     for current in hook_config.get("additional_dependencies", ()):
@@ -57,12 +59,13 @@ def _sort_updates_key(update):
     return (current_dependency.lc.line, current_dependency.lc.col)
 
 
-def generate_updates(hook_config, additional_dependencies, dependency_versions):
+def generate_updates(hook_config, additional_dependencies):
+    version_map = VersionMap()
     print(
         f"upadup is checking additional_dependencies of {hook_config['id']}...", end=""
     )
     new_deps = build_updated_dependency_map(
-        hook_config, additional_dependencies, dependency_versions
+        hook_config, additional_dependencies, version_map
     )
     if new_deps:
         print()
@@ -146,9 +149,7 @@ def main(argv: list[str] | None = None):
                 if hook_id in upadup_repo_config:
                     all_updates.extend(
                         generate_updates(
-                            hook_config,
-                            upadup_repo_config.get(hook_id, []),
-                            upadup_config["versions"],
+                            hook_config, upadup_repo_config.get(hook_id, [])
                         )
                     )
 
