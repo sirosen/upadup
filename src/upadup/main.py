@@ -9,7 +9,7 @@ import sys
 import typing as t
 
 from . import config, yaml
-from .package_utils import VersionMap, normalize_package_name
+from .package_utils import VersionMap
 
 
 def load_precommit_config() -> tuple[dict[str, t.Any], None | str | tuple[str, ...]]:
@@ -22,32 +22,26 @@ def load_precommit_config() -> tuple[dict[str, t.Any], None | str | tuple[str, .
 
 
 def update_dependency(
-    current_dependency, known_dependency_names, dependency_versions: VersionMap
-):
+    current_dependency: str, dependency_versions: VersionMap
+) -> str | None:
     if "==" not in current_dependency:
         return None
 
     package_name, _, old_version = current_dependency.partition("==")
 
-    normed_pkg = normalize_package_name(package_name)
-    if normed_pkg not in known_dependency_names:
-        return None
-
-    new_version = dependency_versions[normed_pkg]
+    new_version = dependency_versions[package_name]
     if old_version == new_version:
         return None
 
-    return f"{package_name}=={dependency_versions[normed_pkg]}"
+    return f"{package_name}=={dependency_versions[package_name]}"
 
 
 def build_updated_dependency_map(
-    hook_config, known_dependency_names, dependency_versions: VersionMap
-):
+    hook_config: dict[str, t.Any], dependency_versions: VersionMap
+) -> dict[yaml.StrWithLoc, t.Any]:
     new_deps = {}
     for current in hook_config.get("additional_dependencies", ()):
-        new_dependency = update_dependency(
-            current, known_dependency_names, dependency_versions
-        )
+        new_dependency = update_dependency(current, dependency_versions)
         if new_dependency is None:
             continue
         new_deps[current] = new_dependency
@@ -59,14 +53,14 @@ def _sort_updates_key(update):
     return (current_dependency.lc.line, current_dependency.lc.col)
 
 
-def generate_updates(hook_config, additional_dependencies):
+def generate_updates(
+    hook_config: dict[str, t.Any],
+) -> t.Iterator[tuple[yaml.StrWithLoc, str]]:
     version_map = VersionMap()
     print(
         f"upadup is checking additional_dependencies of {hook_config['id']}...", end=""
     )
-    new_deps = build_updated_dependency_map(
-        hook_config, additional_dependencies, version_map
-    )
+    new_deps = build_updated_dependency_map(hook_config, version_map)
     if new_deps:
         print()
         for current_dependency, new_dependency in new_deps.items():
@@ -76,7 +70,9 @@ def generate_updates(hook_config, additional_dependencies):
         print("no updates needed")
 
 
-def create_new_content(config_path: pathlib.Path, updates):
+def create_new_content(
+    config_path: pathlib.Path, updates: list[tuple[yaml.StrWithLoc, str]]
+):
     with config_path.open("r") as fp:
         file_content = fp.readlines()
 
@@ -95,7 +91,9 @@ def create_new_content(config_path: pathlib.Path, updates):
     return file_content
 
 
-def generate_diff(config_path: pathlib.Path, updates):
+def generate_diff(
+    config_path: pathlib.Path, updates: list[tuple[yaml.StrWithLoc, str]]
+):
     new_content = create_new_content(config_path, updates)
     with config_path.open("r") as fp:
         old_content = fp.readlines()
@@ -105,8 +103,10 @@ def generate_diff(config_path: pathlib.Path, updates):
 
 
 def apply_updates(
-    config_path: pathlib.Path, updates, newline: None | str | tuple[str, ...]
-):
+    config_path: pathlib.Path,
+    updates: list[tuple[yaml.StrWithLoc, str]],
+    newline: None | str | tuple[str, ...],
+) -> None:
     file_content = create_new_content(config_path, updates)
 
     # If no newlines were encountered, use the OS default.
@@ -121,7 +121,7 @@ def apply_updates(
         fp.write("".join(file_content))
 
 
-def main(argv: list[str] | None = None):
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="upadup -- the pre-commit additional_dependencies updater"
     )
@@ -136,22 +136,18 @@ def main(argv: list[str] | None = None):
     upadup_config = config.load_upadup_config()
     precommit_config, existing_newlines = load_precommit_config()
 
-    all_updates = []
-    for repo_config in precommit_config["repos"]:
-        repo_str = repo_config.get("repo").casefold()
+    all_updates: list[tuple[yaml.StrWithLoc, str]] = []
+    for precommit_repo_config in precommit_config["repos"]:
+        repo_str = precommit_repo_config.get("repo").casefold()
         # Strip the ".git" suffix from the repo URL, if present.
         if repo_str.endswith(".git"):
             repo_str = repo_str[:-4]
-        if repo_str in upadup_config["repos"]:
-            upadup_repo_config = upadup_config["repos"][repo_str]
-            for hook_config in repo_config["hooks"]:
+        if repo_str in upadup_config.repos:
+            upadup_config_hook_ids = upadup_config.get_hooks(repo_str)
+            for hook_config in precommit_repo_config["hooks"]:
                 hook_id = hook_config["id"]
-                if hook_id in upadup_repo_config:
-                    all_updates.extend(
-                        generate_updates(
-                            hook_config, upadup_repo_config.get(hook_id, [])
-                        )
-                    )
+                if hook_id in upadup_config_hook_ids:
+                    all_updates.extend(generate_updates(hook_config))
 
     all_updates = sorted(all_updates, key=_sort_updates_key)
 

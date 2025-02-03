@@ -32,8 +32,8 @@ Otherwise, it uses its default configuration.
 `upadup` needs to know what hook repos you want it to examine, and within those
 which dependencies you want it to keep updated.
 The config format intentionally mirrors your pre-commit config. Specify a list
-of repos, and in each repo, specify a list of hooks to update. Hooks are a
-combination of `id` (the hook ID) and `additional_dependencies`.
+of repos, and in each repo, specify a list of hooks to update. Hooks are an
+`id` (the hook ID) entry under the target repo.
 
 For example:
 
@@ -43,8 +43,6 @@ repos:
   - repo: https://github.com/pycqa/flake8
     hooks:
       - id: flake8
-        additional_dependencies:
-          - flake8_bugbear
 ```
 
 This configuration would match the following pre-commit config:
@@ -60,38 +58,19 @@ repos:
           - 'flake8-bugbear==22.7.1'
 ```
 
-Note that matching is case insensitive for repo names and
-`additional_dependencies`, and that we normalize `-` and `_` to match, as
-pypi.org does. But the overall structure of the config is intended to be a
-mirror image.
-
 ### Default Config
 
-The following config is the `upadup` default. Note that missing dependencies are
-ignored.
+The following config is the `upadup` default.
 
 ```yaml
 repos:
   - repo: https://github.com/pycqa/flake8
     hooks:
       - id: flake8
-        additional_dependencies:
-          - flake8-bandit
-          - flake8-bugbear
-          - flake8-builtins
-          - flake8-comprehensions
-          - flake8-docstrings
-          - flake8-implicit-str-concat
-          - flake8-logging-format
-          - flake8-pyi
-          - flake8-typing-as-t
-          - flake8-typing-imports
 
   - repo: https://github.com/adamchainz/blacken-docs
     hooks:
       - id: blacken-docs
-        additional_dependencies:
-          - black
 
   # Old hook URLs
   # -------------
@@ -99,8 +78,6 @@ repos:
   - repo: https://github.com/asottile/blacken-docs
     hooks:
       - id: blacken-docs
-        additional_dependencies:
-          - black
 ```
 
 ### extends_default
@@ -116,8 +93,6 @@ repos:
   - repo: https://github.com/pycqa/flake8
     hooks:
       - id: flake8
-        additional_dependencies:
-          - flake8-bugbear
 ```
 
 ## The Meaning of "upadup"

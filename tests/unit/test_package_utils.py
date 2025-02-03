@@ -1,5 +1,6 @@
 import pytest
-from upadup.package_utils import VersionMap, normalize_package_name
+
+from upadup.package_utils import VersionMap, _normalize_package_name
 
 
 @pytest.mark.parametrize(
@@ -7,11 +8,13 @@ from upadup.package_utils import VersionMap, normalize_package_name
     (
         ("foo", "foo"),
         ("foo_bar", "foo-bar"),
+        ("foo-bar", "foo-bar"),
+        ("foo..-.bar", "foo-bar"),
         ("FOO-BAR", "foo-bar"),
     ),
 )
 def test_normalize_package_name(package_name, normed_name):
-    assert normalize_package_name(package_name) == normed_name
+    assert _normalize_package_name(package_name) == normed_name
 
 
 def test_version_map_lazy_lookup(mock_package_latest_version):

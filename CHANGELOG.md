@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Performance enhancement: `upadup` will only call out to `pypi.org` on an
+  as-needed basis
+- `upadup` no longer requires that config enumerates all of the
+  `additional_dependencies` entries. Instead, it works on all
+  `additional_dependencies` for the configured hooks.
+
 ## 0.1.0
 
 - Timeout after 30 seconds when retrieving JSON from PyPI.

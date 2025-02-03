@@ -1,11 +1,18 @@
+import re
 import typing as t
 from collections.abc import Mapping
 
 import requests
 
+# this normalization pattern follows the rules declared for package normalization
+# on pypi itself
+# newer build backends are guaranteed to canonicalize the name portion of dist files
+# to this form, and other ecosystem components may also rely on this canonical form
+_NORMALIZATION_PATTERN = re.compile(r"[-_.]+")
 
-def normalize_package_name(name: str) -> str:
-    return name.lower().replace("_", "-")
+
+def _normalize_package_name(name: str) -> str:
+    return _NORMALIZATION_PATTERN.sub("-", name).lower()
 
 
 def get_pkg_latest(name: str) -> str:
@@ -18,14 +25,14 @@ class VersionMap(Mapping[str, str]):
         self._cache: dict[str, str] = {}
 
     def __getitem__(self, key: str) -> str:
-        normed = normalize_package_name(key)
+        normed = _normalize_package_name(key)
         self._populate(normed)
         return self._cache[normed]
 
     def __contains__(self, key: object) -> bool:
         if not isinstance(key, str):
             return False
-        normed = normalize_package_name(key)
+        normed = _normalize_package_name(key)
         return normed in self._cache
 
     def __iter__(self) -> t.Iterator[str]:
