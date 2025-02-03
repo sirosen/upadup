@@ -5,8 +5,8 @@ build-backend = "flit_core.buildapi"
 [dependency-groups]
 coverage = ["coverage[toml]"]
 lint = ["pre-commit"]
-typing = ["mypy"]
-test = ["pytest", { include-group = "coverage" }]
+typing = ["mypy", "types-requests"]
+test = ["pytest", "responses", { include-group = "coverage" }]
 
 [project]
 name = "upadup"
@@ -31,6 +31,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
+    "requests>=2,<3",
     "ruamel.yaml>=0.18.10,<0.19"
 ]
 
