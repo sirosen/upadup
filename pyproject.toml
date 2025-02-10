@@ -7,6 +7,7 @@ coverage = ["coverage[toml]"]
 lint = ["pre-commit"]
 typing = ["mypy", "types-requests"]
 test = ["pytest", "responses", { include-group = "coverage" }]
+build = ["twine", "build"]
 
 [project]
 name = "upadup"
