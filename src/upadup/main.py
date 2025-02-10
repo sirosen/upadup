@@ -48,12 +48,7 @@ def build_updated_dependency_map(
     return new_deps
 
 
-def _sort_updates_key(update):
-    current_dependency, new_dependency = update
-    return (current_dependency.lc.line, current_dependency.lc.col)
-
-
-def generate_updates(
+def generate_hook_updates(
     hook_config: dict[str, t.Any],
 ) -> t.Iterator[tuple[yaml.StrWithLoc, str]]:
     version_map = VersionMap()
@@ -121,20 +116,10 @@ def apply_updates(
         fp.write("".join(file_content))
 
 
-def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(
-        description="upadup -- the pre-commit additional_dependencies updater"
-    )
-    parser.add_argument(
-        "--check",
-        help="check and show diff, but do not update",
-        action="store_true",
-        default=False,
-    )
-    args = parser.parse_args(argv or sys.argv[1:])
-
+def generate_all_updates(
+    precommit_config: dict[str, t.Any],
+) -> list[tuple[yaml.StrWithLoc, str]]:
     upadup_config = config.load_upadup_config()
-    precommit_config, existing_newlines = load_precommit_config()
 
     all_updates: list[tuple[yaml.StrWithLoc, str]] = []
     for precommit_repo_config in precommit_config["repos"]:
@@ -147,9 +132,30 @@ def main(argv: list[str] | None = None) -> None:
             for hook_config in precommit_repo_config["hooks"]:
                 hook_id = hook_config["id"]
                 if hook_id in upadup_config_hook_ids:
-                    all_updates.extend(generate_updates(hook_config))
+                    all_updates.extend(generate_hook_updates(hook_config))
 
-    all_updates = sorted(all_updates, key=_sort_updates_key)
+    return sorted(all_updates, key=_sort_updates_key)
+
+
+def _sort_updates_key(update):
+    current_dependency, new_dependency = update
+    return (current_dependency.lc.line, current_dependency.lc.col)
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        description="upadup -- the pre-commit additional_dependencies updater"
+    )
+    parser.add_argument(
+        "--check",
+        help="check and show diff, but do not update",
+        action="store_true",
+        default=False,
+    )
+    args = parser.parse_args(argv or sys.argv[1:])
+
+    precommit_config, existing_newlines = load_precommit_config()
+    all_updates = generate_all_updates(precommit_config)
 
     if all_updates:
         if args.check:

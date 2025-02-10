@@ -73,3 +73,6 @@ exclude_lines = [
     "if t.TYPE_CHECKING:",
     "@t.overload",
 ]
+
+[tool.isort]
+profile = "black"

@@ -1,4 +1,5 @@
 import pytest
+
 from upadup.config import BadConfigError, Config
 
 
