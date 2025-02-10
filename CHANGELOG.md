@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.0
+
 - Performance enhancement: `upadup` will only call out to `pypi.org` on an
   as-needed basis
 - `upadup` no longer requires that config enumerates all of the
