@@ -1,3 +1,5 @@
+import typing as t
+
 import ruamel.yaml
 
 # see: https://stackoverflow.com/a/45717104/2669818
@@ -5,13 +7,27 @@ import ruamel.yaml
 # store the line and column numbers
 
 
-class StrWithLoc(ruamel.yaml.scalarstring.ScalarString):
+class _StrWithLoc(ruamel.yaml.scalarstring.ScalarString):
     __slots__ = "lc"
 
     style = ""
 
     def __new__(cls, value):
         return ruamel.yaml.scalarstring.ScalarString.__new__(cls, value)
+
+
+# define StrWithLoc as above at runtime, but specialize it for type checkers
+if t.TYPE_CHECKING:
+
+    class Loc(t.NamedTuple):
+        line: int
+        col: int
+
+    class StrWithLoc(str):
+        lc: Loc
+
+else:
+    StrWithLoc = _StrWithLoc
 
 
 class PreservedScalarStringWithLoc(ruamel.yaml.scalarstring.PreservedScalarString):
