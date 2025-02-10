@@ -58,3 +58,35 @@ def test_updates_package_preserving_strange_indentation(
                             - "flake8-typing-as-t==1.0.0"
         """
     )
+
+
+def test_updates_multiple_packages_in_one_line_with_length_changes(
+    update_from_text, mock_package_latest_version
+):
+    mock_package_latest_version("flake8-typing-as-t", "1.0.0")
+    mock_package_latest_version("flake8-bugbear", "24.12.12")
+    mock_package_latest_version("flake8-comprehensions", "3.16.0")
+    fixed_text = update_from_text(
+        """\
+        repos:
+          - repo: https://github.com/PyCQA/flake8
+            rev: 7.1.1
+            hooks:
+              - id: flake8
+                additional_dependencies: [
+                  "flake8-typing-as-t==0.0", "flake8-bugbear==23", "flake8-comprehensions==2.1"
+                ]
+        """  # noqa: E501
+    )
+    assert fixed_text == textwrap.dedent(
+        """\
+        repos:
+          - repo: https://github.com/PyCQA/flake8
+            rev: 7.1.1
+            hooks:
+              - id: flake8
+                additional_dependencies: [
+                  "flake8-typing-as-t==1.0.0", "flake8-bugbear==24.12.12", "flake8-comprehensions==3.16.0"
+                ]
+        """  # noqa: E501
+    )
