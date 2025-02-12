@@ -5,11 +5,11 @@ import difflib
 import functools
 import os
 import pathlib
-import re
 import sys
 import typing as t
 
 from . import config, yaml
+from .dep_parser import SpecifierParseError, UnsupportedSpecifierError, parse_specifier
 from .package_utils import VersionMap
 
 
@@ -136,48 +136,25 @@ class UpadupUpdater:
         new_deps = {}
         for current in hook_config.get("additional_dependencies", ()):
             new_dependency = self._update_dependency(current)
-            if new_dependency is None:
+            if new_dependency == current:
                 continue
             new_deps[current] = new_dependency
         return new_deps
 
-    def _update_dependency(self, current_dependency: str) -> str | None:
-        if "==" not in current_dependency:
-            return None
-
-        package_name, _, old_version = current_dependency.partition("==")
+    def _update_dependency(self, current_dependency: str) -> str:
         try:
-            leading_version_space, old_version, trailing_version_space = (
-                _split_off_leading_and_trailing_whitespace(old_version)
-            )
-        except ValueError:
+            specifier = parse_specifier(current_dependency)
+        except UnsupportedSpecifierError:
+            return current_dependency
+        except SpecifierParseError:
             print(
                 f"'{current_dependency}' did not parse correctly, skipping",
                 file=sys.stderr,
             )
-            return None
+            return current_dependency
 
-        new_version = self._version_map[package_name.strip()]
-
-        if old_version == new_version:
-            return None
-
-        return (
-            f"{package_name}=="
-            f"{leading_version_space}{new_version}{trailing_version_space}"
-        )
-
-
-_WS_PATTERN = re.compile(r"(\s*)(\S*)(\s*)")
-
-
-def _split_off_leading_and_trailing_whitespace(original: str) -> tuple[str, str, str]:
-    match = _WS_PATTERN.match(original)
-    if len(match.group(0)) != len(original):
-        raise ValueError(
-            f"whitespace matching on '{original}' failed on unexpected spaces"
-        )
-    return match.group(1, 2, 3)
+        new_version = self._version_map[specifier.package_name]
+        return specifier.update_version(new_version).format()
 
 
 def _create_new_content(
