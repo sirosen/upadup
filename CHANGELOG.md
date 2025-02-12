@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Parsing and handling of whitespace in dependency specifiers has been
+  improved. Whitespace is now handled correctly in more scenarios.
+
 ## 0.2.0
 
 - Performance enhancement: `upadup` will only call out to `pypi.org` on an
