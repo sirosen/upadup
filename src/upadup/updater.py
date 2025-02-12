@@ -5,6 +5,8 @@ import difflib
 import functools
 import os
 import pathlib
+import re
+import sys
 import typing as t
 
 from . import config, yaml
@@ -144,12 +146,38 @@ class UpadupUpdater:
             return None
 
         package_name, _, old_version = current_dependency.partition("==")
+        try:
+            leading_version_space, old_version, trailing_version_space = (
+                _split_off_leading_and_trailing_whitespace(old_version)
+            )
+        except ValueError:
+            print(
+                f"'{current_dependency}' did not parse correctly, skipping",
+                file=sys.stderr,
+            )
+            return None
 
-        new_version = self._version_map[package_name]
+        new_version = self._version_map[package_name.strip()]
+
         if old_version == new_version:
             return None
 
-        return f"{package_name}=={new_version}"
+        return (
+            f"{package_name}=="
+            f"{leading_version_space}{new_version}{trailing_version_space}"
+        )
+
+
+_WS_PATTERN = re.compile(r"(\s*)(\S*)(\s*)")
+
+
+def _split_off_leading_and_trailing_whitespace(original: str) -> tuple[str, str, str]:
+    match = _WS_PATTERN.match(original)
+    if len(match.group(0)) != len(original):
+        raise ValueError(
+            f"whitespace matching on '{original}' failed on unexpected spaces"
+        )
+    return match.group(1, 2, 3)
 
 
 def _create_new_content(
