@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.3.0
+
 - `upadup` now supports "Compatible release" (`~=`) and "Arbitrary equality"
   (`===`) clauses when parsing dependency specifiers and will update packages
   with these styles of pins to their latest versions.
