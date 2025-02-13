@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.3.1
+
 - Avoid using `typing.Self`, which causes issues when type checking on older
   Python versions which do not define `Self` yet.
 
