@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import dataclasses
 import re
-import typing as t
 
 # Note: order matters because we will check for these in order
 # therefore, `===` should come before `==`
@@ -65,7 +64,7 @@ class ParsedSpecifier:
         )
         return "".join(parts)
 
-    def update_version(self, new_version: str) -> t.Self:
+    def update_version(self, new_version: str) -> ParsedSpecifier:
         return dataclasses.replace(self, version=new_version)
 
 

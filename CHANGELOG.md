@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Avoid using `typing.Self`, which causes issues when type checking on older
+  Python versions which do not define `Self` yet.
+
 ## 0.3.0
 
 - `upadup` now supports "Compatible release" (`~=`) and "Arbitrary equality"
