@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `upadup` now supports "Compatible release" (`~=`) and "Arbitrary equality"
+  (`===`) clauses when parsing dependency specifiers and will update packages
+  with these styles of pins to their latest versions.
 - Parsing and handling of whitespace in dependency specifiers has been
   improved. Whitespace is now handled correctly in more scenarios.
 
