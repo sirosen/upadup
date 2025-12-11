@@ -90,7 +90,7 @@ class UpadupUpdater:
         # If multiple newline variants were encountered, pick one.
         # Note that the order of newlines in the tuple is meaningless.
         elif isinstance(self._existing_newlines, tuple):
-            newline = newline[0]
+            newline = self._existing_newlines[0]
         # otherwise, some newline style was detected and we'll use that
         else:
             newline = self._existing_newlines

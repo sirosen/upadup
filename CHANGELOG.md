@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix a `NameError` crash that occurs if mixed newlines are encountered.
+
 ## 0.3.1
 
 - Avoid using `typing.Self`, which causes issues when type checking on older
