@@ -3,7 +3,6 @@ from __future__ import annotations
 import collections
 import difflib
 import functools
-import os
 import pathlib
 import sys
 import typing as t
@@ -13,14 +12,12 @@ from .dep_parser import SpecifierParseError, UnsupportedSpecifierError, parse_sp
 from .package_utils import VersionMap
 
 
-def _load_precommit_config(
-    path: pathlib.Path,
-) -> tuple[dict[str, t.Any], None | str | tuple[str, ...]]:
+def _load_precommit_config(path: pathlib.Path) -> dict[str, t.Any]:
     if not path.is_file():
         raise ValueError("upadup cannot run without .pre-commit-config.yaml")
 
-    with path.open() as fp:
-        return yaml.load(fp), fp.newlines
+    with path.open(newline="", encoding="utf-8") as fp:
+        return yaml.load(fp)
 
 
 class UpdateCollection:
@@ -54,9 +51,8 @@ class UpadupUpdater:
         self.path = path or (pathlib.Path.cwd() / ".pre-commit-config.yaml")
         self._updates = UpdateCollection()
 
-        precommit_config, existing_newlines = _load_precommit_config(self.path)
+        precommit_config = _load_precommit_config(self.path)
         self._precommit_config = precommit_config
-        self._existing_newlines = existing_newlines
 
         self._version_map = VersionMap()
 
@@ -81,22 +77,10 @@ class UpadupUpdater:
     def apply_updates(self) -> None:
         _, new_content = _create_new_content(self.path, self._updates)
 
-        # map `self._existing_newlines` data onto a newline variant to use
-        # when writing the file
-        #
-        # If no newlines were encountered, use the OS default.
-        if self._existing_newlines is None:
-            newline: str = os.linesep
-        # If multiple newline variants were encountered, pick one.
-        # Note that the order of newlines in the tuple is meaningless.
-        elif isinstance(self._existing_newlines, tuple):
-            newline = self._existing_newlines[0]
-        # otherwise, some newline style was detected and we'll use that
-        else:
-            newline = self._existing_newlines
-
-        with self.path.open("w", newline=newline) as fp:
-            fp.write("".join(new_content))
+        # write the data as UTF-8 bytes, to ensure that `\r\n` is not turned into
+        # `\r\r\n` on Windows, where `os.linesep` is `\r\n`
+        with self.path.open("wb") as fp:
+            fp.write("".join(new_content).encode())
 
     def run(self) -> UpdateCollection:
         for precommit_repo_config in self._precommit_config["repos"]:
@@ -160,7 +144,8 @@ class UpadupUpdater:
 def _create_new_content(
     config_path: pathlib.Path, updates: UpdateCollection
 ) -> tuple[list[str], list[str]]:
-    with config_path.open("r") as fp:
+    # preserve the original newlines, do not modify them
+    with config_path.open("r", newline="", encoding="utf-8") as fp:
         old_content = fp.readlines()
     new_content = old_content.copy()
 
