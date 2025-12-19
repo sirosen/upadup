@@ -17,8 +17,9 @@ from upadup.updater import UpadupUpdater
         pytest.param([b"\r", b"\r", b"\r", b"\n"], id="r|r|r|n"),
     ],
 )
+@pytest.mark.parametrize("num_trailing_blank_lines", (0, 1, 3, 11))
 def test_updates_package_and_preserves_mixed_newlines(
-    mock_package_latest_version, tmp_path, newline_pattern
+    mock_package_latest_version, tmp_path, newline_pattern, num_trailing_blank_lines
 ):
     mock_package_latest_version("flake8-bugbear", "24.12.12")
 
@@ -35,6 +36,9 @@ def test_updates_package_and_preserves_mixed_newlines(
     expect_fixed_content = list(content[:-1]) + [
         b"          - 'flake8-bugbear==24.12.12'"
     ]
+    add_lines = [b""] * num_trailing_blank_lines
+    content += add_lines
+    expect_fixed_content += add_lines
 
     newline_series = itertools.cycle(newline_pattern)
     content = [line + next(newline_series) for line in content]
