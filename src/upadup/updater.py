@@ -16,8 +16,7 @@ def _load_precommit_config(path: pathlib.Path) -> dict[str, t.Any]:
     if not path.is_file():
         raise ValueError("upadup cannot run without .pre-commit-config.yaml")
 
-    with path.open(newline="", encoding="utf-8") as fp:
-        return yaml.load(fp)
+    return yaml.load(path.read_bytes().decode())
 
 
 class UpdateCollection:
@@ -79,8 +78,7 @@ class UpadupUpdater:
 
         # write the data as UTF-8 bytes, to ensure that `\r\n` is not turned into
         # `\r\r\n` on Windows, where `os.linesep` is `\r\n`
-        with self.path.open("wb") as fp:
-            fp.write("".join(new_content).encode())
+        self.path.write_bytes("".join(new_content).encode())
 
     def run(self) -> UpdateCollection:
         for precommit_repo_config in self._precommit_config["repos"]:
