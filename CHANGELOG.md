@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Fix a `NameError` crash that occurs if mixed newlines are encountered.
+- Support updating Go dependencies hosted on GitHub.
+- Add a `--freeze` CLI option to freeze dependencies to git SHAs.
 
 ## 0.3.1
 
