@@ -174,3 +174,29 @@ def test_updates_of_arbitrary_equality_clauses(
                   - "flake8-bugbear === 24.12.12"
         """
     )
+
+
+@pytest.mark.parametrize(
+    "freeze, expected",
+    (
+        (False, "v0.11.1"),
+        (True, "4e7020840c303923eb1ab846fc446d77be892570"),
+    ),
+)
+def test_update_go_github_dependency(
+    freeze, expected, update_from_text, mock_github_tags, mock_package_latest_version
+):
+    base = "github.com/wasilibs/go-shellcheck/cmd/shellcheck"
+    original_text = f"""
+        repos:
+          - repo: https://github.com/PyCQA/flake8
+            rev: 7.1.1
+            hooks:
+              - id: flake8
+                additional_dependencies:
+                  - "{base}@v0.0.0"
+    """
+
+    updated_text = update_from_text(original_text, freeze=freeze)
+
+    assert f'- "{base}@{expected}"' in updated_text
