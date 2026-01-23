@@ -16,9 +16,15 @@ def main(argv: list[str] | None = None) -> None:
         action="store_true",
         default=False,
     )
+    parser.add_argument(
+        "--freeze",
+        help="freeze to commit SHAs, where applicable",
+        action="store_true",
+        default=False,
+    )
     args = parser.parse_args(argv or sys.argv[1:])
 
-    updater = UpadupUpdater()
+    updater = UpadupUpdater(freeze=args.freeze)
     updater.run()
 
     if updater.has_updates():
