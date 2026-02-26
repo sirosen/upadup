@@ -10,6 +10,7 @@ import typing as t
 from . import config, yaml
 from .dep_parser import SpecifierParseError, UnsupportedSpecifierError, parse_specifier
 from .package_utils import VersionMap
+from .providers import github
 
 
 def _load_precommit_config(path: pathlib.Path) -> dict[str, t.Any]:
@@ -46,7 +47,8 @@ def _sort_updates_key(update):
 
 
 class UpadupUpdater:
-    def __init__(self, path: pathlib.Path | None = None) -> None:
+    def __init__(self, path: pathlib.Path | None = None, freeze: bool = False) -> None:
+        self.freeze = freeze
         self.path = path or (pathlib.Path.cwd() / ".pre-commit-config.yaml")
         self._updates = UpdateCollection()
 
@@ -82,16 +84,10 @@ class UpadupUpdater:
 
     def run(self) -> UpdateCollection:
         for precommit_repo_config in self._precommit_config["repos"]:
-            repo_str = precommit_repo_config.get("repo").casefold()
-            # Strip the ".git" suffix from the repo URL, if present.
-            if repo_str.endswith(".git"):
-                repo_str = repo_str[:-4]
-            if repo_str in self._upadup_config.repos:
-                upadup_config_hook_ids = self._upadup_config.get_hooks(repo_str)
-                for hook_config in precommit_repo_config["hooks"]:
-                    hook_id = hook_config["id"]
-                    if hook_id in upadup_config_hook_ids:
-                        self._updates.extend(self._generate_hook_updates(hook_config))
+            for hook_config in precommit_repo_config["hooks"]:
+                if not hook_config.get("additional_dependencies"):
+                    continue
+                self._updates.extend(self._generate_hook_updates(hook_config))
 
         self._updates.sort()
         return self._updates
@@ -124,6 +120,8 @@ class UpadupUpdater:
         return new_deps
 
     def _update_dependency(self, current_dependency: str) -> str:
+        if current_dependency.startswith("github.com/"):
+            return github.get_latest_tag(current_dependency, freeze=self.freeze)
         try:
             specifier = parse_specifier(current_dependency)
         except UnsupportedSpecifierError:
