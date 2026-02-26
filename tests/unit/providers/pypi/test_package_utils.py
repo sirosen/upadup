@@ -1,6 +1,6 @@
 import pytest
 
-from upadup.package_utils import VersionMap, _normalize_package_name
+from upadup.providers.pypi.package_utils import VersionMap, _normalize_package_name
 
 
 @pytest.mark.parametrize(

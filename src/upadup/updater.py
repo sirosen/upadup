@@ -8,9 +8,7 @@ import sys
 import typing as t
 
 from . import config, yaml
-from .dep_parser import SpecifierParseError, UnsupportedSpecifierError, parse_specifier
-from .package_utils import VersionMap
-from .providers import github
+from .providers import github, pypi
 
 
 def _load_precommit_config(path: pathlib.Path) -> dict[str, t.Any]:
@@ -55,7 +53,7 @@ class UpadupUpdater:
         precommit_config = _load_precommit_config(self.path)
         self._precommit_config = precommit_config
 
-        self._version_map = VersionMap()
+        self._version_map = pypi.VersionMap()
 
     @functools.cached_property
     def _upadup_config(self) -> config.Config:
@@ -126,10 +124,10 @@ class UpadupUpdater:
         if current_dependency.startswith("github.com/"):
             return github.get_latest_tag(current_dependency, freeze=self.freeze)
         try:
-            specifier = parse_specifier(current_dependency)
-        except UnsupportedSpecifierError:
+            specifier = pypi.parse_specifier(current_dependency)
+        except pypi.UnsupportedSpecifierError:
             return current_dependency
-        except SpecifierParseError:
+        except pypi.SpecifierParseError:
             print(
                 f"'{current_dependency}' did not parse correctly, skipping",
                 file=sys.stderr,
