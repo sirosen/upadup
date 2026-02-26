@@ -19,6 +19,22 @@ Simply `cd myrepo; upadup`!
 
 `upadup` will try to update all `additional_dependencies` for all hooks.
 
+### Configuration
+
+`upadup` supports TOML configuration in one of two files: `.upadup.toml` or `pyproject.toml`.
+These files are always checked in the current working directory.
+
+In both cases, config is a table in `[tool.upadup]` with the following keys:
+
+- `skip_repos`: an array of strings, exact names of repos to skip
+
+For example:
+
+```toml
+[tool.upadup]
+skip_repos = ["https://github.com/PyCQA/flake8"]
+```
+
 ## The Meaning of "upadup"
 
 Update python additional depenedencies uh... pre-commit!

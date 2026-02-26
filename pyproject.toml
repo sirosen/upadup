@@ -34,7 +34,8 @@ classifiers = [
 dependencies = [
     "packaging>=25.0",
     "requests>=2,<3",
-    "ruamel.yaml>=0.18.10,<0.19"
+    "ruamel.yaml>=0.18.10,<0.19",
+    "tomli; python_version < '3.11'",
 ]
 
 [project.urls]
