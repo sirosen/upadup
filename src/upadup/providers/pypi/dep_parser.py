@@ -26,7 +26,8 @@ class UnsupportedSpecifierError(ValueError):
 
 
 class SpecifierParseError(ValueError):
-    def __init__(
+    # TODO: adjust exception style for B042
+    def __init__(  # noqa: B042
         self,
         *,
         specifier: str | None = None,

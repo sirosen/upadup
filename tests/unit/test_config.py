@@ -66,21 +66,17 @@ def test_malformed_config_is_rejected(
     [
         ("tool.upadup = {skip_repos = ['foo']}\n", ("foo",)),
         (
-            d(
-                """\
+            d("""\
             [tool.upadup]
             skip_repos = []
-            """
-            ),
+            """),
             (),
         ),
         (
-            d(
-                """\
+            d("""\
             [tool.upadup]
             skip_repos = ['a', 'b', 'c']
-            """
-            ),
+            """),
             ("a", "b", "c"),
         ),
     ],
