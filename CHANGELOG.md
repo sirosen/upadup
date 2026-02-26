@@ -5,6 +5,8 @@
 - Fix a `NameError` crash that occurs if mixed newlines are encountered.
 - Support updating Go dependencies hosted on GitHub.
 - Add a `--freeze` CLI option to freeze dependencies to git SHAs.
+- `upadup` no longer uses a config file (`.upadup.yaml`). Future versions will
+  support a new configuration mechanism.
 
 ## 0.3.1
 

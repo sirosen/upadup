@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import collections
 import difflib
-import functools
 import pathlib
 import sys
 import typing as t
 
-from . import config, yaml
+from . import yaml
 from .dep_parser import SpecifierParseError, UnsupportedSpecifierError, parse_specifier
 from .package_utils import VersionMap
 from .providers import github
@@ -56,10 +55,6 @@ class UpadupUpdater:
         self._precommit_config = precommit_config
 
         self._version_map = VersionMap()
-
-    @functools.cached_property
-    def _upadup_config(self) -> config.Config:
-        return config.load_upadup_config()
 
     def has_updates(self) -> bool:
         return bool(self._updates)
