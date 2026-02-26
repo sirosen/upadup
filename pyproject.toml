@@ -7,7 +7,8 @@ coverage = ["coverage[toml]"]
 lint = ["pre-commit"]
 typing = ["mypy", "types-requests"]
 test = ["pytest", "responses", { include-group = "coverage" }]
-build = ["twine", "build"]
+build = ["build"]
+check-package-metadata = [{include-group = "build"}, "twine", "check-sdist"]
 
 [project]
 name = "upadup"
@@ -45,6 +46,15 @@ source = "https://github.com/sirosen/upadup"
 
 [project.scripts]
 upadup = "upadup.main:main"
+
+
+[tool.flit.sdist]
+include = ["AUTHORS.md", "CHANGELOG.md", "tests/**/*.py", "tox.ini", ".flake8", "justfile"]
+exclude = [".*", "src/**/.*"]
+
+
+[tool.check-sdist]
+git-only = ["RELEASING.md", ".gitignore", "scripts/*"]
 
 
 [tool.mypy]
