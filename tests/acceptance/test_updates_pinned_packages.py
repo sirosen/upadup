@@ -200,3 +200,33 @@ def test_update_go_github_dependency(
     updated_text = update_from_text(original_text, freeze=freeze)
 
     assert f'- "{base}@{expected}"' in updated_text
+
+
+def test_no_update_when_config_skips_repo(
+    update_from_text, mock_package_latest_version
+):
+    # a newer version is, in fact, available
+    mock_package_latest_version("flake8-bugbear", "24.12.12")
+
+    original_text = """\
+    repos:
+      - repo: https://github.com/PyCQA/flake8
+        rev: 7.1.1
+        hooks:
+          - id: flake8
+            additional_dependencies:
+              - "flake8-bugbear==23.0.0"
+    """
+
+    fixed_text = update_from_text(
+        original_text,
+        # but a skip is configured!
+        config_content=(
+            """\
+            [tool.upadup]
+            skip_repos = ["https://github.com/PyCQA/flake8"]
+            """
+        ),
+    )
+    # no change is observed
+    assert fixed_text == textwrap.dedent(original_text)
