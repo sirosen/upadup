@@ -18,7 +18,6 @@ jobs:
         id: setup-python
         with:
           python-version: |
-            3.9
             3.10
             3.11
             3.12
@@ -44,7 +43,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - pythons: ["3.9", "3.13"]
+          - pythons: ["3.10", "3.13"]
             tox_label: "ci-mypy"
           - pythons: ["3.13"]
             tox_label: "ci-package-check"
