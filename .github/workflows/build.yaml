@@ -22,6 +22,7 @@ jobs:
             3.11
             3.12
             3.13
+            3.14
 
       # get the week of the year (1-52) for cache control
       # this ensures that at least weekly we'll test with a clear cache
@@ -43,9 +44,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - pythons: ["3.10", "3.13"]
+          - pythons: ["3.10", "3.14"]
             tox_label: "ci-mypy"
-          - pythons: ["3.13"]
+          - pythons: ["3.14"]
             tox_label: "ci-package-check"
 
     runs-on: ubuntu-latest

@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Remove support for Python 3.9
+- Added support for Python 3.14
+- Removed support for Python 3.9
 
 ## 0.4.0
 
