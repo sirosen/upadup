@@ -1,6 +1,6 @@
 import pytest
 
-from upadup.dep_parser import (
+from upadup.providers.pypi.dep_parser import (
     SpecifierParseError,
     UnsupportedSpecifierError,
     parse_specifier,
