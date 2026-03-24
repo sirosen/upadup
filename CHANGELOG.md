@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added support for Python 3.14
+- Removed support for Python 3.9
+
 ## 0.4.0
 
 - Fix a `NameError` crash that occurs if mixed newlines are encountered.
