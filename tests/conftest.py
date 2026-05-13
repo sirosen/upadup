@@ -3,6 +3,8 @@ import typing as t
 import pytest
 import responses
 
+from upadup.providers.github.errors import GitHub404
+
 
 @pytest.fixture(autouse=True)
 def mocked_responses():
@@ -60,3 +62,17 @@ def mock_github_tags(
     monkeypatch.setattr("upadup.providers.github.cli.HAS_CLI", True)
 
     yield setter
+
+
+@pytest.fixture
+def mock_github_404(monkeypatch) -> t.Iterator[None]:
+    """Mock a 404 response from GitHub."""
+
+    def raiser(*_, **__) -> None:
+        raise GitHub404
+
+    monkeypatch.setattr("upadup.providers.github.api.get_tags_json", raiser)
+    monkeypatch.setattr("upadup.providers.github.cli.get_tags_json", raiser)
+    monkeypatch.setattr("upadup.providers.github.cli.HAS_CLI", True)
+
+    yield

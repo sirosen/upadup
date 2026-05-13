@@ -178,6 +178,28 @@ def test_update_go_github_dependency(
     assert f'- "{base}@{expected}"' in updated_text
 
 
+def test_update_go_github_dependency_404(
+    update_from_text, mock_github_404, mock_package_latest_version, capsys
+):
+    base = "github.com/bad-owner/bad-repo/mumble/mumble"
+    original_text = f"""
+        repos:
+          - repo: https://github.com/PyCQA/flake8
+            rev: 7.1.1
+            hooks:
+              - id: flake8
+                additional_dependencies:
+                  - "{base}@v0.0.0"
+    """
+
+    updated_text = update_from_text(original_text, freeze=True)
+
+    assert f'- "{base}@v0.0.0"' in updated_text
+
+    error_message = "GitHub returned a 404 when listing tags for bad-owner/bad-repo."
+    assert capsys.readouterr().err.strip() == error_message
+
+
 def test_no_update_when_config_skips_repo(
     update_from_text, mock_package_latest_version
 ):

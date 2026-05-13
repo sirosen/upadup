@@ -4,6 +4,7 @@ import textwrap
 import pytest
 
 import upadup.providers.github.cli
+import upadup.providers.github.errors
 
 
 @pytest.fixture(autouse=True)
@@ -84,3 +85,24 @@ def test_gh_cli_get_tags(monkeypatch):
     monkeypatch.setattr("upadup.providers.github.cli.subprocess.run", subprocess_runner)
 
     assert isinstance(upadup.providers.github.cli.get_tags_json("org", "repo"), list)
+
+
+def test_gh_cli_get_tags_404(monkeypatch):
+    """Verify that GitHub CLI invocations raise when the owner/repo are not found."""
+
+    # This is the full output when a 404 occurs for a CLI invocation.
+    doc_url = "https://docs.github.com/rest/repos/repos#list-repository-tags"
+    stdout = f'{{"message":"Not Found","documentation_url":"{doc_url}","status":"404"}}'
+    stderr = "gh: Not Found (HTTP 404)"
+    return_code = 1
+
+    def subprocess_runner(*args, **kwargs):
+        run_args = kwargs.get("args", None) or args[0]
+        return subprocess.CompletedProcess(
+            run_args, returncode=return_code, stdout=stdout, stderr=stderr
+        )
+
+    monkeypatch.setattr("upadup.providers.github.cli.subprocess.run", subprocess_runner)
+
+    with pytest.raises(upadup.providers.github.errors.GitHub404):
+        upadup.providers.github.cli.get_tags_json("org", "repo")
