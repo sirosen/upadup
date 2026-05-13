@@ -4,6 +4,10 @@
 
 - Added support for Python 3.14
 - Removed support for Python 3.9
+- Fix a crash that occurs when freezing dependencies via the GitHub provider.
+
+  The crash occurred because GitHub now rejects trailing slashes in the API route.
+  It manifested as `TypeError: string indices must be integers, not 'str'`.
 
 ## 0.4.0
 
