@@ -8,6 +8,7 @@
 
   The crash occurred because GitHub now rejects trailing slashes in the API route.
   It manifested as `TypeError: string indices must be integers, not 'str'`.
+- Catch 404 errors from GitHub and write a warning to STDERR.
 
 ## 0.4.0
 

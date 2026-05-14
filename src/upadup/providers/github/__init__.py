@@ -1,6 +1,8 @@
+import sys
+
 import packaging.version
 
-from . import api, cli
+from . import api, cli, errors
 
 
 def get_latest_tag(string: str, *, freeze: bool = False) -> str:
@@ -13,10 +15,15 @@ def get_latest_tag(string: str, *, freeze: bool = False) -> str:
     if host != "github.com":
         raise ValueError("Not a GitHub-based dependency")
 
-    if cli.has_cli():
-        response = cli.get_tags_json(owner, repo)
-    else:
-        response = api.get_tags_json(owner, repo)
+    try:
+        if cli.has_cli():
+            response = cli.get_tags_json(owner, repo)
+        else:
+            response = api.get_tags_json(owner, repo)
+    except errors.GitHub404:
+        msg = f"GitHub returned a 404 when listing tags for {owner}/{repo}."
+        print(msg, file=sys.stderr)
+        return string
 
     tags = {}
     for tag_info in response:

@@ -3,6 +3,8 @@ import shutil
 import subprocess
 import typing as t
 
+from .errors import GitHub404
+
 HAS_CLI = None
 
 
@@ -27,12 +29,18 @@ def get_tags_json(
     owner: str,
     repo: str,
 ) -> list[dict[str, t.Any]]:
-    """Get recent tags for a repo."""
+    """Get recent tags for a repo.
+
+    :raises GitHub404: If the GH CLI returns a non-zero exit code.
+    """
 
     command = ["gh", "api"]
     command.extend(["-H", "Accept: application/vnd.github+json"])
     command.extend(["-H", "X-GitHub-Api-Version: 2022-11-28"])
     command.append(f"/repos/{owner}/{repo}/tags")
-    stdout = subprocess.check_output(command, encoding="utf-8")
+    completed_process = subprocess.run(command, encoding="utf-8")
+    if completed_process.returncode == 0:
+        return json.loads(completed_process.stdout)
 
-    return json.loads(stdout)
+    # Other responses may exist, but the point is that the tags could not be gathered.
+    raise GitHub404()
